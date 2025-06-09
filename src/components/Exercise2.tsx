@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,8 +10,9 @@ const Exercise2 = () => {
   const [submitted, setSubmitted] = useState(false);
   const [showCorrection, setShowCorrection] = useState(false);
   const [scores, setScores] = useState<boolean[]>([]);
+  const [shuffledSentences, setShuffledSentences] = useState<string[]>([]);
 
-  const sentences = [
+  const originalSentences = [
     "La femme qui chante est talentueuse",
     "Le livre que tu lis est passionnant",
     "Les enfants qui jouent sont joyeux",
@@ -25,6 +25,11 @@ const Exercise2 = () => {
     "La maison que ils ont construite est moderne"
   ];
 
+  useEffect(() => {
+    const shuffled = [...originalSentences].sort(() => Math.random() - 0.5);
+    setShuffledSentences(shuffled);
+  }, []);
+
   const shuffleArray = (array: string[]) => {
     const shuffled = [...array];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -35,12 +40,14 @@ const Exercise2 = () => {
   };
 
   useEffect(() => {
-    const words = sentences[currentQuestion].split(' ');
-    setAvailableWords(shuffleArray(words));
-    setUserSentence([]);
-    setSubmitted(false);
-    setShowCorrection(false);
-  }, [currentQuestion]);
+    if (shuffledSentences.length > 0) {
+      const words = shuffledSentences[currentQuestion].split(' ');
+      setAvailableWords(shuffleArray(words));
+      setUserSentence([]);
+      setSubmitted(false);
+      setShowCorrection(false);
+    }
+  }, [currentQuestion, shuffledSentences]);
 
   const addWordToSentence = (word: string, index: number) => {
     setUserSentence(prev => [...prev, word]);
@@ -54,23 +61,27 @@ const Exercise2 = () => {
   };
 
   const resetSentence = () => {
-    const words = sentences[currentQuestion].split(' ');
-    setAvailableWords(shuffleArray(words));
-    setUserSentence([]);
+    if (shuffledSentences.length > 0) {
+      const words = shuffledSentences[currentQuestion].split(' ');
+      setAvailableWords(shuffleArray(words));
+      setUserSentence([]);
+    }
   };
 
   const checkAnswer = () => {
-    const correct = userSentence.join(' ') === sentences[currentQuestion];
-    setSubmitted(true);
-    setScores(prev => {
-      const newScores = [...prev];
-      newScores[currentQuestion] = correct;
-      return newScores;
-    });
+    if (shuffledSentences.length > 0) {
+      const correct = userSentence.join(' ') === shuffledSentences[currentQuestion];
+      setSubmitted(true);
+      setScores(prev => {
+        const newScores = [...prev];
+        newScores[currentQuestion] = correct;
+        return newScores;
+      });
+    }
   };
 
   const nextQuestion = () => {
-    if (currentQuestion < sentences.length - 1) {
+    if (currentQuestion < shuffledSentences.length - 1) {
       setCurrentQuestion(prev => prev + 1);
     }
   };
@@ -84,6 +95,10 @@ const Exercise2 = () => {
   const isCorrect = scores[currentQuestion] === true;
   const isIncorrect = scores[currentQuestion] === false;
 
+  if (shuffledSentences.length === 0) {
+    return <div>Chargement...</div>;
+  }
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -94,7 +109,7 @@ const Exercise2 = () => {
           Glissez les mots pour former une phrase correcte avec "qui" ou "que".
         </CardDescription>
         <div className="text-sm text-muted-foreground">
-          Question {currentQuestion + 1} sur {sentences.length}
+          Question {currentQuestion + 1} sur {shuffledSentences.length}
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -177,7 +192,7 @@ const Exercise2 = () => {
           <Button
             variant="outline"
             onClick={nextQuestion}
-            disabled={currentQuestion === sentences.length - 1}
+            disabled={currentQuestion === shuffledSentences.length - 1}
           >
             Suivant
           </Button>
@@ -196,7 +211,7 @@ const Exercise2 = () => {
             </Button>
             {showCorrection && (
               <div className="p-4 bg-green-50 border border-green-200 rounded">
-                <strong>Phrase correcte :</strong> {sentences[currentQuestion]}
+                <strong>Phrase correcte :</strong> {shuffledSentences[currentQuestion]}
               </div>
             )}
           </div>
@@ -206,7 +221,7 @@ const Exercise2 = () => {
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div
             className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${((currentQuestion + 1) / sentences.length) * 100}%` }}
+            style={{ width: `${((currentQuestion + 1) / shuffledSentences.length) * 100}%` }}
           ></div>
         </div>
       </CardContent>

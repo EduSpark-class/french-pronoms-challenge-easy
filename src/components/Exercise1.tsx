@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -10,8 +10,9 @@ const Exercise1 = () => {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [submitted, setSubmitted] = useState(false);
   const [showCorrections, setShowCorrections] = useState<Record<number, boolean>>({});
+  const [shuffledQuestions, setShuffledQuestions] = useState<any[]>([]);
 
-  const questions = [
+  const originalQuestions = [
     { id: 1, sentence: "La fille ___ parle est ma sœur.", correct: "qui" },
     { id: 2, sentence: "Le livre ___ je lis est intéressant.", correct: "que" },
     { id: 3, sentence: "L'homme ___ travaille ici est gentil.", correct: "qui" },
@@ -23,6 +24,11 @@ const Exercise1 = () => {
     { id: 9, sentence: "Le chien ___ aboie appartient au voisin.", correct: "qui" },
     { id: 10, sentence: "La maison ___ ils habitent est grande.", correct: "que" }
   ];
+
+  useEffect(() => {
+    const shuffled = [...originalQuestions].sort(() => Math.random() - 0.5);
+    setShuffledQuestions(shuffled);
+  }, []);
 
   const handleAnswerChange = (questionId: number, value: string) => {
     setAnswers(prev => ({ ...prev, [questionId]: value }));
@@ -37,7 +43,7 @@ const Exercise1 = () => {
   };
 
   const isCorrect = (questionId: number) => {
-    const question = questions.find(q => q.id === questionId);
+    const question = shuffledQuestions.find(q => q.id === questionId);
     return question && answers[questionId] === question.correct;
   };
 
@@ -50,11 +56,11 @@ const Exercise1 = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {questions.map((question) => (
+        {shuffledQuestions.map((question, index) => (
           <div key={question.id} className="space-y-3 p-4 border rounded-lg bg-card">
             <div className="flex items-center space-x-2">
               <span className="font-medium text-sm text-muted-foreground">
-                {question.id}.
+                {index + 1}.
               </span>
               <p className="text-base">{question.sentence}</p>
               {submitted && (
@@ -107,7 +113,7 @@ const Exercise1 = () => {
         <Button 
           onClick={handleSubmit} 
           className="w-full mt-6"
-          disabled={Object.keys(answers).length < questions.length}
+          disabled={Object.keys(answers).length < shuffledQuestions.length}
         >
           Soumettre les réponses
         </Button>

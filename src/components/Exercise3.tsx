@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,8 +9,9 @@ const Exercise3 = () => {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [submitted, setSubmitted] = useState(false);
   const [showCorrections, setShowCorrections] = useState<Record<number, boolean>>({});
+  const [shuffledQuestions, setShuffledQuestions] = useState<any[]>([]);
 
-  const questions = [
+  const originalQuestions = [
     {
       id: 1,
       sentence1: "J'ai vu un homme.",
@@ -83,6 +84,11 @@ const Exercise3 = () => {
     }
   ];
 
+  useEffect(() => {
+    const shuffled = [...originalQuestions].sort(() => Math.random() - 0.5);
+    setShuffledQuestions(shuffled);
+  }, []);
+
   const handleAnswerChange = (questionId: number, value: string) => {
     setAnswers(prev => ({ ...prev, [questionId]: value }));
   };
@@ -96,7 +102,7 @@ const Exercise3 = () => {
   };
 
   const isCorrect = (questionId: number) => {
-    const question = questions.find(q => q.id === questionId);
+    const question = shuffledQuestions.find(q => q.id === questionId);
     const userAnswer = answers[questionId]?.trim().toLowerCase();
     const correctAnswer = question?.correct.toLowerCase();
     
@@ -118,11 +124,11 @@ const Exercise3 = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {questions.map((question) => (
+        {shuffledQuestions.map((question, index) => (
           <div key={question.id} className="space-y-4 p-4 border rounded-lg bg-card">
             <div className="flex items-start space-x-2">
               <span className="font-medium text-sm text-muted-foreground mt-1">
-                {question.id}.
+                {index + 1}.
               </span>
               <div className="flex-1 space-y-2">
                 <div className="text-sm text-gray-600">
@@ -177,7 +183,7 @@ const Exercise3 = () => {
         <Button 
           onClick={handleSubmit} 
           className="w-full mt-6"
-          disabled={Object.keys(answers).length < questions.length}
+          disabled={Object.keys(answers).length < shuffledQuestions.length}
         >
           Soumettre les réponses
         </Button>
